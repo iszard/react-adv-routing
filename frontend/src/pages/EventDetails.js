@@ -1,26 +1,24 @@
-import { Suspense } from "react";
 import { Await, redirect, useRouteLoaderData } from "react-router-dom";
 import EventItem from "../components/EventItem";
 import EventsList from "../components/EventsList";
+import StyledSuspense from "../components/StyledSuspense";
 import { getAuthToken } from "../util/auth";
 
 function EventDetailsPage() {
-  //   const params = useParams();
-
   const { event, events } = useRouteLoaderData("event-detail");
 
   return (
     <>
-      <Suspense fallback={<p style={{ textAlign: "center" }}>Loading...</p>}>
+      <StyledSuspense>
         <Await resolve={event}>
           {(loadEvent) => <EventItem event={loadEvent} />}
         </Await>
-      </Suspense>
-      <Suspense fallback={<p style={{ textAlign: "center" }}>Loading...</p>}>
+      </StyledSuspense>
+      <StyledSuspense>
         <Await resolve={events}>
           {(loadEvents) => <EventsList events={loadEvents} />}
         </Await>
-      </Suspense>
+      </StyledSuspense>
     </>
   );
 }

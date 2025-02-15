@@ -1,23 +1,24 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { action as manipulateEventAction } from "./components/EventForm";
-import EditEventPage from "./pages/EditEvent";
 import ErrorPage from "./pages/Error";
-import EventDetailsPage, {
-  action as deleteEventAction,
-  loader as eventDetailLoader,
-} from "./pages/EventDetails";
-import EventsPage, { loader as eventsLoader } from "./pages/Events";
 import EventsRootLayout from "./pages/EventsRoot";
 import HomePage from "./pages/HomePage";
-import NewEventPage from "./pages/NewEvent";
-import NewsletterPage, { action as newsletterAction } from "./pages/Newsletter";
 import RootLayout from "./pages/Root";
 
-import AuthenticationPage, {
-  action as authAction,
-} from "./pages/Authentication";
-import { action as logoutAction } from "./pages/Logout";
+import { lazy } from "react";
+import StyledSuspense from "./components/StyledSuspense";
 import { checkAuthLoader, tokenLoader } from "./util/auth";
+
+const EventsPage = lazy(() => import("./pages/Events"));
+const AuthenticationPage = lazy(() => import("./pages/Authentication"));
+const NewsletterPage = lazy(() => import("./pages/Newsletter"));
+const EventDetailsPage = lazy(() => import("./pages/EventDetails"));
+const NewEventPage = lazy(() => import("./pages/NewEvent"));
+const EditEventPage = lazy(() => import("./pages/EditEvent"));
+
+function lazyLoader(path, funcName = "loader") {
+  return ({ request, params }) =>
+    import(`${path}`).then((module) => module[funcName]({ request, params }));
+}
 
 const router = createBrowserRouter([
   {
@@ -34,42 +35,73 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <EventsPage />,
-            loader: eventsLoader,
+            element: (
+              <StyledSuspense>
+                <EventsPage />
+              </StyledSuspense>
+            ),
+            loader: lazyLoader("./pages/Events"),
           },
           {
             path: ":eventId",
             id: "event-detail",
-            loader: eventDetailLoader,
+            loader: lazyLoader("./pages/EventDetails"),
             children: [
               {
                 index: true,
-                element: <EventDetailsPage />,
-                action: deleteEventAction,
+                element: (
+                  <StyledSuspense>
+                    <EventDetailsPage />
+                  </StyledSuspense>
+                ),
+                action: lazyLoader("./pages/EventDetails", "action"),
               },
               {
                 path: "edit",
-                element: <EditEventPage />,
-                action: manipulateEventAction,
+                element: (
+                  <StyledSuspense>
+                    <EditEventPage />
+                  </StyledSuspense>
+                ),
+                action: lazyLoader("./components/EventForm", "action"),
                 loader: checkAuthLoader,
               },
             ],
           },
           {
             path: "new",
-            element: <NewEventPage />,
-            action: manipulateEventAction,
+            element: (
+              <StyledSuspense>
+                <NewEventPage />
+              </StyledSuspense>
+            ),
+            action: lazyLoader("./components/EventForm", "action"),
             loader: checkAuthLoader,
           },
         ],
       },
-      { path: "auth", element: <AuthenticationPage />, action: authAction },
+      {
+        path: "auth",
+        element: (
+          <StyledSuspense>
+            <AuthenticationPage />
+          </StyledSuspense>
+        ),
+        action: lazyLoader("./pages/Authentication", "action"),
+      },
       {
         path: "newsletter",
-        element: <NewsletterPage />,
-        action: newsletterAction,
+        element: (
+          <StyledSuspense>
+            <NewsletterPage />
+          </StyledSuspense>
+        ),
+        action: lazyLoader("./pages/Newsletter", "action"),
       },
-      { path: "logout", action: logoutAction },
+      {
+        path: "logout",
+        action: lazyLoader("./pages/Logout", "action"),
+      },
     ],
   },
 ]);
