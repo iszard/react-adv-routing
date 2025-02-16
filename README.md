@@ -1,6 +1,6 @@
 # React Adv Routing
 
-This is a project to demonstrate my ability to work with the React Router (dom) and JWT authentication.
+This is a project to demonstrate my ability to work with the React Router (dom), Lazy Loading and JWT authentication.
 
 Backend
 
